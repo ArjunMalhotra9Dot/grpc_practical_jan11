@@ -1,15 +1,30 @@
-# Base image
-FROM golang:1.23
+#! Stage 1: Build Stage
+FROM golang:1.23-alpine AS build
 
 # Set the working directory
 WORKDIR /app
 
-# Copy source code
+# Copy go.mod and go.sum for dependency resolution
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the entire source code
 COPY . .
 
-# Download dependencies and build the application
-RUN go mod download
-RUN go build -o email_service main.go
+# Build the Go application
+RUN CGO_ENABLED=0 GOOS=linux go build -o email_service main.go
+
+#! Stage 2: Final Stage
+FROM alpine:3.18
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the binary from the build stage
+COPY --from=build /app/email_service .
+
+# Install CA certificates and timezone data
+RUN apk --no-cache add ca-certificates tzdata
 
 # Expose the gRPC port
 EXPOSE 50051
