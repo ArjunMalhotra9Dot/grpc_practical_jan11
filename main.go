@@ -17,7 +17,7 @@ func main() {
 	}
 	grpcServer := grpc.NewServer()
 	pb.RegisterEmailServiceServer(grpcServer, &email.EmailServiceServer{})
-	log.Println("Email service is running on port 50051...")
+	log.Println("Email service is running on port 50051..")
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}
